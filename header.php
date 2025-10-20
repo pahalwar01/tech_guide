@@ -11,10 +11,8 @@
   <link rel="icon" type="image/x-icon" href="img/logo_trans.png">
 </head>
 <body>
-  <header>
     <h1 class="brand-name"><b><?php include 'brand_name.php'; ?></b></h1>
     <p class="brand-slogan"><b>"Your Journey, Our Responsibility"</b></p>
     <p class="brand-slogan-lastline" style="margin-top: -10px;">"Trusted tours and travels company in Delhi & NCR."</p>
-  </header>
 </body>
 </html>
