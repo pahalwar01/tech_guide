@@ -15,6 +15,6 @@
 
 <body>
     <header><?php include 'header.php' ;?></header>
-    <nav><?php include 'navbar.php';?></nav>
+    <nav><?php include 'navbar.php' ;?></nav>
 </body>
 </html>
