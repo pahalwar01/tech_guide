@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick OCR - Image to Text</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
+        h1 { color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; }
+        .upload-section { border: 2px dashed #007bff; padding: 20px; border-radius: 8px; margin: 20px 0; background: #f0f8ff; position: relative; }
+        input[type="file"] { margin: 10px 0; cursor: pointer; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #progress-container { margin-top: 20px; display: none; }
+        .progress-bar { width: 100%; background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #28a745; transition: width 0.2s; }
+        textarea { width: 100%; margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; box-sizing: border-box; }
+        .copy-btn { background-color: #28a745; margin-top: 10px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📄 Image to Text</h1>
+    <p>Scanned image upload karein aur text copy karein.</p>
+
+    <div class="upload-section">
+        <input type="file" id="file-input" accept="image/*">
+    </div>
+
+    <button id="start-btn" onclick="startOCR()">Convert to Editable Text</button>
+
+    <div id="progress-container">
+        <p id="status">Taiyari ho rahi hai...</p>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+    </div>
+
+    <textarea id="output-text" rows="10" placeholder="Aapka text yahan dikhega..."></textarea>
+    
+    <button class="copy-btn" id="copy-btn" onclick="copyText()" style="display:none;">Copy Text</button>
+</div>
+
+<script>
+    async function startOCR() {
+        const fileInput = document.getElementById('file-input');
+        const output = document.getElementById('output-text');
+        const status = document.getElementById('status');
+        const progressFill = document.getElementById('progress-fill');
+        const progressContainer = document.getElementById('progress-container');
+        const startBtn = document.getElementById('start-btn');
+        const copyBtn = document.getElementById('copy-btn');
+
+        if (fileInput.files.length === 0) {
+            alert("Bhai, pehle photo toh select kar lo!");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        
+        // Reset UI
+        startBtn.disabled = true;
+        progressContainer.style.display = 'block';
+        output.value = "";
+        copyBtn.style.display = 'none';
+
+        // Tesseract Worker Setup
+        const worker = await Tesseract.createWorker('eng+hin', 1, {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    status.innerText = `Scanning: ${Math.round(m.progress * 100)}%`;
+                    progressFill.style.width = (m.progress * 100) + "%";
+                } else {
+                    status.innerText = m.status;
+                }
+            }
+        });
+
+        try {
+            const { data: { text } } = await worker.recognize(file);
+            output.value = text;
+            status.innerText = "Mubarak ho! Text nikal gaya.";
+            copyBtn.style.display = 'block';
+        } catch (error) {
+            status.innerText = "Arre! Kuch gadbad ho gayi.";
+            console.error(error);
+        } finally {
+            await worker.terminate();
+            startBtn.disabled = false;
+        }
+    }
+
+    function copyText() {
+        const text = document.getElementById('output-text');
+        text.select();
+        document.execCommand('copy');
+        alert("Text copy ho gaya hai!");
+    }
+</script>
+
+</body>
+</html>
